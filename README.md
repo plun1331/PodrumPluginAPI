@@ -138,7 +138,7 @@ So, you've made commands and event listeners, but they do nothing!
 
 This is because you need to tell your plugin class that your plugin has actually been loaded.
 
-To do this, simply call `plugin.startup()` when your plugin enabled. This will register your commands and listeners with the server.
+To do this, simply call `plugin.startup()` when your plugin enables. This will register your commands and listeners with the server.
 
 Likewise, when you disable the plugin, you must call `plugin.cleanup()`. This will remove your commands and listeners from the server.
 
