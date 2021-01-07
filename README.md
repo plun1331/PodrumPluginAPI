@@ -54,6 +54,27 @@ Output:
 
 Setting default arguments will also work.
 
+```py
+import PluginAPI
+
+plugin = PluginAPI.Plugins()
+
+@plugin.command(
+    name = "help",
+    description = "send help",
+    usage = "<me/you> <thing you need help with>"
+)
+def _help(sender, person="I", *, thing="Nothing"):
+    sender.sendMessage(f"{person} need help with {thing}!")
+```
+
+```
+Input:
+    help
+Output:
+    I need help with Nothing!
+```
+
 If your command must take an undefined number of arguments, you can simply turn that argument into a kwarg, a keyword argument, and the rest of the commands arguments will become that keyword argument.
 
 And no, you cannot have more than one kwarg.
@@ -87,11 +108,11 @@ Simply create a function with the `@plugin.event()` decorator. The decorator tak
 
 You can only listen to the following events:
 
-    - `on_command_error` - Called when a command raises an exception.
+- `on_command_error` - Called when a command raises an exception.
 
-    - `before_command_invoke` - Called before a command is executed.
+- `before_command_invoke` - Called before a command is executed.
 
-    - `after_command_invoke` - Called after a command is executed.
+- `after_command_invoke` - Called after a command is executed.
 
 All events take the arguments `command`, the command being invoked, `sender`, the person who invoked the command, and `args`, a list of arguments the command was invoked with.
 
@@ -112,3 +133,14 @@ def errorHandler(command, sender, args, error):
     sender.sendMessage(f"Oops, the command broke.")
 ```
 
+## Loading your plugin
+So, you've made commands and event listeners, but they do nothing!
+
+This is because you need to tell your plugin class that your plugin has actually been loaded.
+
+To do this, simply call `plugin.startup()` when your plugin enabled. This will register your commands and listeners with the server.
+
+Likewise, when you disable the plugin, you must call `plugin.cleanup()`. This will remove your commands and listeners from the server.
+
+# Some things to note
+You will not be warned if you make a duplicate command, it will simply replace the existing one. It will, however, reinstate the removed command when the plugin is unloaded.
