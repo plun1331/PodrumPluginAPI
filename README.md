@@ -4,7 +4,7 @@
 Podrum is currently a work in progress, and is currently useless.
 
 # How to Install
- To install, simply download the `PluginAPI.zip` file from the latest release and insert it into your Podrum server's `src` folder.
+ To install, simply download the `PluginAPI.zip` file from the latest release and extract it into your Podrum server's `src` folder.
 
  You can then import the module using `import PluginAPI`.
 

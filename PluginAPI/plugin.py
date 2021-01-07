@@ -5,7 +5,7 @@ import traceback
 import sys
 import inspect
 from PluginAPI.errors import CommandInvokeError, MissingRequiredArgument, TooManyArguments
-
+from .CommandManager import CommandManager2
 
 
 class Commands:
@@ -132,7 +132,7 @@ class Plugins:
 
     def cleanup(self):
         for command in self.commands_str:
-            CommandManager.deleteCommand(command)
+            CommandManager2.deleteCommand(command)
         for command in self.removed:
             CommandManager.registerCommand(command)
     
@@ -140,7 +140,7 @@ class Plugins:
         for command in self.commands:
             if CommandManager.isCommand(command.name):
                 cmd = CommandManager.getCommand(command.name)
-                CommandManager.deleteCommand(command.name)
+                CommandManager2.deleteCommand(command.name)
                 self.removed_str.append(cmd.name)
                 self.removed.append(cmd)
             CommandManager.registerCommand(command)
