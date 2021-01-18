@@ -5,7 +5,7 @@ import traceback
 import sys
 import inspect
 from PluginAPI.errors import CommandInvokeError, MissingRequiredArgument, TooManyArguments
-from .CommandManager import CommandManager2
+from .CommandManagerEdited import CommandManager2
 
 
 class Commands:
@@ -17,11 +17,16 @@ class Commands:
         self.plugin = None
     
     def execute(self, sender, args):
+        # creates some variables
         arg = [sender]
         arg.extend(args[1:])
         args = arg
         argcopy = args
-        self.plugin.events['before_command_invoke'](self, sender, args)
+        
+        # calls the plugin's on_command
+        self.plugin.events['on_command'](self, sender, args)
+        
+        # parses arguments
         argspec = inspect.getfullargspec(self.func)
         kwargs = None
         if not inspect.ismethod(self.func):
@@ -35,14 +40,26 @@ class Commands:
             if kwargs[argspec[4][0]] == '':
                 kwargs = None
             [args.pop() for arg in no_sender_args[pos_args:]]
+        
+        # convert arguments
+        # signature = inspect.signature(self.func)
+        # self.params = signature.parameters.copy()
+        # for key, value in self.params.items():
+        #     if isinstance(value.annotation, str):
+        #         self.params[key] = value = value.replace(annotation=eval(value.annotation, function.__globals__))
+
+        # invokes the command
         try:
             if kwargs is not None:
                 self.func(*args, **{str(k): v for k, v in kwargs.items()})
             else:
                 self.func(*args)
         except Exception as error:
+            # encountered an error
             return self.plugin.events['on_command_error'](self, sender, argcopy, error)
-        self.plugin.events['after_command_invoke'](self, sender, argcopy)
+
+        # calls the plugins on_command_complete
+        self.plugin.events['on_command_complete'](self, sender, argcopy)
 
 
 
@@ -50,10 +67,10 @@ def on_command_error(command, sender, args, error):
     print(f"Ignoring exception in {command.name}:")
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-def before_command_invoke(command, sender, args):
+def on_command(command, sender, args):
     pass
 
-def after_command_invoke(command, sender, args):
+def on_command_complete(command, sender, args):
     pass
     
 class Plugins:
@@ -64,8 +81,8 @@ class Plugins:
         self.removed_str = []
         self.events = {
             'on_command_error': on_command_error,
-            'before_command_invoke': before_command_invoke,
-            'after_command_invoke': after_command_invoke
+            'on_command': on_command,
+            'on_command_complete': on_command_complete
         }
         self.valid_events = ['on_command_error', 'before_command_invoke', 'after_command_invoke']
 
@@ -130,13 +147,13 @@ class Plugins:
             self.events[event] = function
         return decorator
 
-    def cleanup(self):
+    def unload(self):
         for command in self.commands_str:
             CommandManager2.deleteCommand(command)
         for command in self.removed:
             CommandManager.registerCommand(command)
     
-    def startup(self):
+    def load(self):
         for command in self.commands:
             if CommandManager.isCommand(command.name):
                 cmd = CommandManager.getCommand(command.name)
