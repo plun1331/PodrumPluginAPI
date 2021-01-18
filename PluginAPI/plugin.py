@@ -51,11 +51,22 @@ class Commands:
         # invokes the command
         try:
             if kwargs is not None:
+                if len(args) < pos_args:
+                    raise MissingRequiredArgument
                 self.func(*args, **{str(k): v for k, v in kwargs.items()})
             else:
                 self.func(*args)
         except Exception as error:
             # encountered an error
+            try:
+                if isinstance(error, TypeError):
+                    # yes this is scuffed but i dont give a damn
+                    if 'missing' in str(error) and 'required' in str(error) and 'argument: ' in str(error):
+                        raise MissingRequiredArgument
+                    if 'takes' in str(error) and 'argument' in str(error) and ' positional argument but ' in str(error) and ' were given' in str(error):
+                        raise TooManyArguments
+            except Exception as e:
+                return self.plugin.events['on_command_error'](self, sender, argcopy, e)
             return self.plugin.events['on_command_error'](self, sender, argcopy, error)
 
         # calls the plugins on_command_complete
